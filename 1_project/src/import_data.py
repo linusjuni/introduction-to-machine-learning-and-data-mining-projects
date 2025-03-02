@@ -12,6 +12,7 @@ def import_data():
     df = pd.read_excel(data_path)
     add_grade_column(df)
     attributeNames = df.columns.values
+
     classLabels = df["Grade"].to_list()
     classNames = sorted(set(classLabels))
     classDict = dict(zip(classNames, range(4)))
@@ -47,7 +48,7 @@ def scatter(X, C, y, classNames, attributeNames):
 
 def PCA_variance(X, N):
     Y = X - np.ones((N, 1)) * X.mean(axis=0)
-
+    Y = Y * (1 / np.std(Y, 0))
     U, S, Vh = svd(Y, full_matrices=False)
 
     V = Vh.T
@@ -55,7 +56,7 @@ def PCA_variance(X, N):
     rho = (S * S) / (S * S).sum()
 
     threshold = 0.9
-
+    print(rho)
     plt.figure()
     plt.plot(range(1, len(rho) + 1), rho, "x-")
     plt.plot(range(1, len(rho) + 1), np.cumsum(rho), "o-")
@@ -69,14 +70,13 @@ def PCA_variance(X, N):
 
 def PCA_attribute(X,attributeNames,N,y):
     Y = X - np.ones((N, 1)) * X.mean(0)
+    Y = Y * (1 / np.std(Y, 0))
     U, S, Vh = svd(Y, full_matrices=False)
     V = Vh.T
     N, M = X.shape
 
-    # We saw in 2.1.3 that the first 3 components explaiend more than 90
-    # percent of the variance. Let's look at their coefficients:
-    pcs = [ 1, 2, 3, 4, 5]
-    legendStrs = ["PC" + str(e + 1) for e in pcs]
+    pcs = [0,1,2,3,4,5,6,7]
+    """legendStrs = ["PC" + str(e + 1) for e in pcs]
     bw = 0.2
     r = np.arange(1, M + 1)
 
@@ -88,32 +88,32 @@ def PCA_attribute(X,attributeNames,N,y):
     plt.ylabel("Component coefficients")
     plt.legend(legendStrs)
     plt.grid()
-    plt.title("NanoNose: PCA Component Coefficients")
+    plt.title("Conccrete: PCA Component Coefficients")
+    plt.show()
+    print(V[:, 7].T)"""
+    
+
+    fig, axes = plt.subplots(4, 2, figsize=(12, 8), sharey = True)
+    axes = axes.flatten()
+    
+    # Create a bar plot for each selected principal component
+    for i, ax in enumerate(axes):
+        if i < len(pcs):
+            pc = pcs[i]
+            # Bar plot for the loadings (component coefficients)
+            ax.bar(np.arange(M), V[:, pc])
+            ax.set_xticks(np.arange(M))
+            #ax.set_xticklabels(attributeNames[:M], rotation=45, ha="right")
+            ax.set_title(f"Principal Component {pc + 1}")
+            ax.set_xlabel("Attributes")
+            ax.set_ylabel("Loading Coefficient")
+            ax.grid(True)
+        else:
+            ax.axis("off")  # in case there are more subplots than PCs
+            
+    fig.tight_layout()
     plt.show()
 
-    # Inspecting the plot, we see that the 2nd principal component has large
-    # (in magnitude) coefficients for attributes A, E and H. We can confirm
-    # this by looking at it's numerical values directly, too:
-    print("PC2:")
-    print(V[:, 1].T)
-
-    # How does this translate to the actual data and its projections?
-    # Looking at the data for water:
-
-    # Projection of water class onto the 2nd principal component.
-    all_water_data = Y[y == 4, :]
-
-    print("First water observation")
-    print(all_water_data[0, :])
-
-    # Based on the coefficients and the attribute values for the observation
-    # displayed, would you expect the projection onto PC2 to be positive or
-    # negative - why? Consider *both* the magnitude and sign of *both* the
-    # coefficient and the attribute!
-
-    # You can determine the projection by (remove comments):
-    # print("...and its projection onto PC2") 
-    # print(all_water_data[0, :] @ V[:, 1])  
 
 
 def print_summary_statistics(data):
@@ -140,8 +140,8 @@ def add_grade_column(df):
 def main():
     X, y, N, M, C, classNames, attributeNames = import_data()
     #scatter(X,C,y,classNames, attributeNames)
-    PCA_variance(X,N)
-    #PCA_attribute(X,attributeNames,N,y)
+    #PCA_variance(X,N)
+    PCA_attribute(X,attributeNames,N,y)
     #print(data.head(10))
     #print(data)
     #print(values)
