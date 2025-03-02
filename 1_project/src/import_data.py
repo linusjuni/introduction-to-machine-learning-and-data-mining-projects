@@ -114,7 +114,26 @@ def PCA_attribute(X,attributeNames,N,y):
     fig.tight_layout()
     plt.show()
 
+def PCA_scatter(X, N, C, classNames,y):
+    Y = X - np.ones((N, 1)) * X.mean(0)
+    Y = Y * (1 / np.std(Y, 0))
+    U, S, Vh = svd(Y, full_matrices=False)
+    V = Vh.T
+    Z = Y @ V
 
+    i = 0
+    j = 1
+
+    f = plt.figure()
+    plt.title("Concrete data: PCA")
+    # Z = array(Z)
+    for c in range(C):
+        class_mask = y == c
+        plt.plot(Z[class_mask, i], Z[class_mask, j], "o", alpha=0.5)
+    plt.legend(classNames)
+    plt.xlabel("PC{0}".format(i + 1))
+    plt.ylabel("PC{0}".format(j + 1))
+    plt.show()
 
 def print_summary_statistics(data):
     summary_stats = data.describe()
@@ -141,7 +160,8 @@ def main():
     X, y, N, M, C, classNames, attributeNames = import_data()
     #scatter(X,C,y,classNames, attributeNames)
     #PCA_variance(X,N)
-    PCA_attribute(X,attributeNames,N,y)
+    #PCA_attribute(X,attributeNames,N,y)
+    PCA_scatter(X,N,C,classNames,y)
     #print(data.head(10))
     #print(data)
     #print(values)
