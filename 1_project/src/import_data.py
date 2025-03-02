@@ -31,10 +31,11 @@ def assign_grade(value):
 
 def add_grade_column(df):
     df['Grade'] = df[df.columns[8]].apply(assign_grade)
-    print(df)
+    return df
 
 def main():
     data, values, headers = import_data()
+    data = add_grade_column(data)
     print(data)
     print(values)
     print(headers)
