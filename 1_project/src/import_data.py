@@ -22,17 +22,12 @@ def extract_data():
     return data, attributesNames
 
 def boxplots(df,attr):
-    # Set up a grid with 3 rows and 3 columns (since you have 9 attributes)
     fig, axes = plt.subplots(3, 3, figsize=(15, 15))
-    axes = axes.flatten()  # Flatten the axes array to easily iterate over
-    
-    # Loop through the attributes and corresponding axes
+    axes = axes.flatten()
     for i, column in enumerate(attr):
-        # Plot each boxplot on a different subplot
         df.boxplot(column=column, ax=axes[i])
-        axes[i].set_title(f'Boxplot of {column}')  # Set title for each plot
+        axes[i].set_title(f'Boxplot of {column}')
     
-    # Adjust layout to avoid overlap
     plt.tight_layout()
     plt.show()
 
@@ -59,26 +54,22 @@ def plots_strength(df,attr):
     return grades
 
 def hists(df,attr):
-    # Set up the number of rows and columns for the grid layout
-    n_cols = 3  # You can adjust this based on your needs
+    n_cols = 3
     n_rows = (len(attr) // n_cols) + (1 if len(attr) % n_cols != 0 else 0)
 
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, n_rows * 5))  # Adjust size as needed
-    axes = axes.flatten()  # Flatten axes for easier iteration
-
-    # Loop through the attributes and create a histogram for each
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, n_rows * 5))
+    axes = axes.flatten()
     for i, column in enumerate(attr):
-        axes[i].hist(df[column], bins=20, edgecolor='black')  # Customize number of bins as needed
+        axes[i].hist(df[column], bins=20, edgecolor='black')
         axes[i].set_title(f'Histogram of {column}')
         axes[i].set_xlabel(column)
         axes[i].set_ylabel('Frequency')
-        axes[i].grid(True, axis='y', linestyle='--', alpha=0.7)  # Add grid for easier readability
-    
-    # Turn off unused axes (if the number of attributes isn't a perfect grid)
+        axes[i].grid(True, axis='y', linestyle='--', alpha=0.7)
+
     for j in range(i + 1, len(axes)):
         axes[j].axis('off')
     
-    plt.tight_layout()  # Adjust layout to prevent overlapping
+    plt.tight_layout() 
     plt.show()
 
 def add_grade_column(df):
