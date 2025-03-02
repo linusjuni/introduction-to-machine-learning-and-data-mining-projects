@@ -10,6 +10,7 @@ from pathlib import Path
 def import_data():
     data_path = Path(__file__).resolve().parent.parent / "data" / "Concrete_Data.xls"
     df = pd.read_excel(data_path)
+    add_grade_column(df)
     return df, df.values, df.columns.values
 
 def print_summary_statistics(data):
@@ -35,7 +36,7 @@ def add_grade_column(df):
 
 def main():
     data, values, headers = import_data()
-    data = add_grade_column(data)
+    print(data.head(10))
     print(data)
     print(values)
     print(headers)
