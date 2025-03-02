@@ -28,14 +28,14 @@ def boxplots(df,attr):
     plt.show()
 
 def assign_grade(value):
-    if value < 22.4:
-        return 'Grade 1'
-    elif 22.4 <= value < 42.5:
-        return 'Grade 2'
-    elif 42.5 <= value < 62.5:
-        return 'Grade 3'
+    if value < 20:
+        return 'Low Strength Concrete'
+    elif 20 <= value < 50:
+        return 'Moderate Strength Concrete '
+    elif 50 <= value < 150:
+        return 'High Strength Concrete'
     else:
-        return 'Grade 4'
+        return 'Ultra High Strength Concrete'
 
 def plots_strength(df,attr):
     df[attr[-1]].hist()
