@@ -1,19 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import dtuimldmtools
 import pandas as pd
+import dtuimldmtools
 import os
 from scipy.linalg import svd
 from pathlib import Path
 
-project_root = Path(__file__).resolve()
-while not (project_root / ".git").exists() and project_root != project_root.parent:
-    project_root = project_root.parent
-filename = project_root / "data" / "Concrete_Data.xls"
-data = pd.read_excel(filename)
-X = data.values
+# import data and load it in X
+data_path = Path(__file__).resolve().parent.parent / "data" / "Concrete_Data.xls"
+df = pd.read_excel(data_path)
+X = df.values
 
-print(X[:5, :])
+summary_stats = df.describe()
+for column in summary_stats:
+    print(f"Summary statistics for {column}:")
+    print(summary_stats[column])
+    print()
+
 def extract_data():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filename = os.path.join(project_root, "data", "Concrete_Data.xls")
