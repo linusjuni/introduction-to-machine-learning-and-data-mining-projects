@@ -37,7 +37,6 @@ def scatter(X, C, y, classNames, attributeNames):
     plt.title("Concrete data")
 
     for c in range(C):
-        # select indices belonging to class c:
         class_mask = y == c 
         plt.plot(X[class_mask, i], X[class_mask, j], "o", alpha=0.3)
 
@@ -76,63 +75,53 @@ def PCA_attribute(X,attributeNames,N,y):
     N, M = X.shape
 
     pcs = [0,1,2,3,4,5,6,7]
-    """legendStrs = ["PC" + str(e + 1) for e in pcs]
-    bw = 0.2
-    r = np.arange(1, M + 1)
-
-    for i in pcs:
-        plt.bar(r + i * bw, V[:, i], width=bw)
-
-    #plt.xticks(r + bw, attributeNames)
-    plt.xlabel("Attributes")
-    plt.ylabel("Component coefficients")
-    plt.legend(legendStrs)
-    plt.grid()
-    plt.title("Conccrete: PCA Component Coefficients")
-    plt.show()
-    print(V[:, 7].T)"""
     
-
     fig, axes = plt.subplots(4, 2, figsize=(12, 8), sharey = True)
     axes = axes.flatten()
     
-    # Create a bar plot for each selected principal component
     for i, ax in enumerate(axes):
         if i < len(pcs):
             pc = pcs[i]
-            # Bar plot for the loadings (component coefficients)
             ax.bar(np.arange(M), V[:, pc])
             ax.set_xticks(np.arange(M))
-            #ax.set_xticklabels(attributeNames[:M], rotation=45, ha="right")
             ax.set_title(f"Principal Component {pc + 1}")
             ax.set_xlabel("Attributes")
             ax.set_ylabel("Loading Coefficient")
             ax.grid(True)
         else:
-            ax.axis("off")  # in case there are more subplots than PCs
+            ax.axis("off")
             
     fig.tight_layout()
     plt.show()
 
 def PCA_scatter(X, N, C, classNames,y):
-    Y = X - np.ones((N, 1)) * X.mean(0)
-    Y = Y * (1 / np.std(Y, 0))
+    Y = X - np.ones((N, 1)) * X.mean(axis=0)
+    Y = Y / np.std(Y, axis=0)
     U, S, Vh = svd(Y, full_matrices=False)
     V = Vh.T
+
     Z = Y @ V
-
-    i = 0
-    j = 1
-
-    f = plt.figure()
-    plt.title("Concrete data: PCA")
-    # Z = array(Z)
-    for c in range(C):
-        class_mask = y == c
-        plt.plot(Z[class_mask, i], Z[class_mask, j], "o", alpha=0.5)
-    plt.legend(classNames)
-    plt.xlabel("PC{0}".format(i + 1))
-    plt.ylabel("PC{0}".format(j + 1))
+    
+    # Define the pairs of PCs to plot
+    scatter_pairs = [(0, 1), (0, 2), (1, 2), (0, 3)]
+    
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    axes = axes.flatten()
+    
+    for ax, (i, j) in zip(axes, scatter_pairs):
+        for c in range(C):
+            class_mask = (y == c)
+            ax.plot(Z[class_mask, i], Z[class_mask, j], "o", alpha=0.5, label=classNames[c])
+        ax.set_xlabel(f"PC{i+1}")
+        ax.set_ylabel(f"PC{j+1}")
+        ax.set_title(f"PC{i+1} vs PC{j+1}")
+        ax.grid(True)
+    
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=C, bbox_to_anchor=(0.5, 0.05))
+    
+    fig.suptitle("Concrete data: PCA", fontsize=16)
+    fig.tight_layout(rect=[0, 0.1, 1, 0.95])
     plt.show()
 
 def print_summary_statistics(data):
@@ -147,10 +136,8 @@ def assign_grade(value):
         return 'Low Strength Concrete'
     elif 20 <= value < 50:
         return 'Moderate Strength Concrete '
-    elif 50 <= value < 150:
-        return 'High Strength Concrete'
     else:
-        return 'Ultra High Strength Concrete'
+        return 'High Strength Concrete'
 
 def add_grade_column(df):
     df['Grade'] = df[df.columns[8]].apply(assign_grade)
@@ -158,14 +145,10 @@ def add_grade_column(df):
 
 def main():
     X, y, N, M, C, classNames, attributeNames = import_data()
-    #scatter(X,C,y,classNames, attributeNames)
-    #PCA_variance(X,N)
-    #PCA_attribute(X,attributeNames,N,y)
+    scatter(X,C,y,classNames, attributeNames)
+    PCA_variance(X,N)
+    PCA_attribute(X,attributeNames,N,y)
     PCA_scatter(X,N,C,classNames,y)
-    #print(data.head(10))
-    #print(data)
-    #print(values)
-    #print(headers)
 
 if __name__ == "__main__":
     main()
