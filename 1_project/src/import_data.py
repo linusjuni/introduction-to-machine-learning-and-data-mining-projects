@@ -5,6 +5,7 @@ import dtuimldmtools
 import os
 from scipy.linalg import svd
 from pathlib import Path
+import seaborn as sns
 
 # import data and load it in X
 def import_data():
@@ -22,12 +23,14 @@ def import_data():
     X = np.empty((1030, 8))
     for i, col_id in enumerate(range(0, 8)):
         X[:, i] = df.iloc[0:1030, col_id].values
+    
+    y2 = df.iloc[0:1030,8].values
 
     N = len(y)
     M = len(attributeNames)
     C = len(classNames) 
 
-    return X, y, N, M, C, classNames, attributeNames
+    return X, y, N, M, C, classNames, attributeNames, y2
 
 def scatter(X, C, y, classNames, attributeNames):
     i = 1
@@ -143,12 +146,31 @@ def add_grade_column(df):
     df['Grade'] = df[df.columns[8]].apply(assign_grade)
     return df
 
+def correlation(X,y,attributeName):
+    X = pd.DataFrame(X)
+    fig, axes = plt.subplots(2, 4, figsize=(18, 10)) 
+    axes = axes.flatten() 
+
+    sns.set_style("whitegrid")
+
+    for i, column in enumerate(X.columns):
+        axes[i].scatter(X[column], y, alpha=0.6, color='royalblue', edgecolors='black')
+        xlabel = "Age (days)" if i == 7 else f"Compound {i+1} (kg/m^3)"
+        axes[i].set_xlabel(xlabel, fontsize=12, labelpad=10)
+        axes[i].set_ylabel("Concrete Compressive Strength (MPa)", fontsize=12, labelpad=10)
+        axes[i].grid(True, linestyle='--', alpha=0.6)  # Add subtle grid lines
+
+    fig.suptitle("Scatter Plots of Attributes vs Concrete Compressive Strength", fontsize=18, fontweight="bold")
+    plt.tight_layout(rect=[0, 0, 1, 0.95]) 
+    plt.show()
+
 def main():
-    X, y, N, M, C, classNames, attributeNames = import_data()
-    scatter(X,C,y,classNames, attributeNames)
-    PCA_variance(X,N)
-    PCA_attribute(X,attributeNames,N,y)
-    PCA_scatter(X,N,C,classNames,y)
+    X, y, N, M, C, classNames, attributeNames, y2 = import_data()
+    #scatter(X,C,y,classNames, attributeNames)
+    #PCA_variance(X,N)
+    #PCA_attribute(X,attributeNames,N,y)
+    #PCA_scatter(X,N,C,classNames,y)
+    correlation(X,y2,attributeNames)
 
 if __name__ == "__main__":
     main()
