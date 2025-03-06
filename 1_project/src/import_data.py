@@ -5,6 +5,7 @@ import dtuimldmtools
 import os
 from scipy.linalg import svd
 from pathlib import Path
+import seaborn as sns
 
 # import data and load it in X
 def import_data():
@@ -12,6 +13,7 @@ def import_data():
     df = pd.read_excel(data_path)
     add_grade_column(df)
     attributeNames = df.columns.values
+
     classLabels = df["Grade"].to_list()
     classNames = sorted(set(classLabels))
     classDict = dict(zip(classNames, range(4)))
@@ -21,12 +23,14 @@ def import_data():
     X = np.empty((1030, 8))
     for i, col_id in enumerate(range(0, 8)):
         X[:, i] = df.iloc[0:1030, col_id].values
+    
+    y2 = df.iloc[0:1030,8].values
 
     N = len(y)
     M = len(attributeNames)
     C = len(classNames) 
 
-    return X, y, N, M, C, classNames, attributeNames
+    return X, y, N, M, C, classNames, attributeNames, y2
 
 def scatter(X, C, y, classNames, attributeNames):
     i = 1
@@ -36,7 +40,6 @@ def scatter(X, C, y, classNames, attributeNames):
     plt.title("Concrete data")
 
     for c in range(C):
-        # select indices belonging to class c:
         class_mask = y == c 
         plt.plot(X[class_mask, i], X[class_mask, j], "o", alpha=0.3)
 
@@ -47,7 +50,7 @@ def scatter(X, C, y, classNames, attributeNames):
 
 def PCA_variance(X, N):
     Y = X - np.ones((N, 1)) * X.mean(axis=0)
-
+    Y = Y * (1 / np.std(Y, 0))
     U, S, Vh = svd(Y, full_matrices=False)
 
     V = Vh.T
@@ -55,7 +58,7 @@ def PCA_variance(X, N):
     rho = (S * S) / (S * S).sum()
 
     threshold = 0.9
-
+    print(rho)
     plt.figure()
     plt.plot(range(1, len(rho) + 1), rho, "x-")
     plt.plot(range(1, len(rho) + 1), np.cumsum(rho), "o-")
@@ -69,52 +72,60 @@ def PCA_variance(X, N):
 
 def PCA_attribute(X,attributeNames,N,y):
     Y = X - np.ones((N, 1)) * X.mean(0)
+    Y = Y * (1 / np.std(Y, 0))
     U, S, Vh = svd(Y, full_matrices=False)
     V = Vh.T
     N, M = X.shape
 
-    # We saw in 2.1.3 that the first 3 components explaiend more than 90
-    # percent of the variance. Let's look at their coefficients:
-    pcs = [ 1, 2, 3, 4, 5]
-    legendStrs = ["PC" + str(e + 1) for e in pcs]
-    bw = 0.2
-    r = np.arange(1, M + 1)
-
-    for i in pcs:
-        plt.bar(r + i * bw, V[:, i], width=bw)
-
-    #plt.xticks(r + bw, attributeNames)
-    plt.xlabel("Attributes")
-    plt.ylabel("Component coefficients")
-    plt.legend(legendStrs)
-    plt.grid()
-    plt.title("NanoNose: PCA Component Coefficients")
+    pcs = [0,1,2,3,4,5,6,7]
+    
+    fig, axes = plt.subplots(4, 2, figsize=(12, 8), sharey = True)
+    axes = axes.flatten()
+    
+    for i, ax in enumerate(axes):
+        if i < len(pcs):
+            pc = pcs[i]
+            ax.bar(np.arange(M), V[:, pc])
+            ax.set_xticks(np.arange(M))
+            ax.set_title(f"Principal Component {pc + 1}")
+            ax.set_xlabel("Attributes")
+            ax.set_ylabel("Loading Coefficient")
+            ax.grid(True)
+        else:
+            ax.axis("off")
+            
+    fig.tight_layout()
     plt.show()
 
-    # Inspecting the plot, we see that the 2nd principal component has large
-    # (in magnitude) coefficients for attributes A, E and H. We can confirm
-    # this by looking at it's numerical values directly, too:
-    print("PC2:")
-    print(V[:, 1].T)
+def PCA_scatter(X, N, C, classNames,y):
+    Y = X - np.ones((N, 1)) * X.mean(axis=0)
+    Y = Y / np.std(Y, axis=0)
+    U, S, Vh = svd(Y, full_matrices=False)
+    V = Vh.T
 
-    # How does this translate to the actual data and its projections?
-    # Looking at the data for water:
-
-    # Projection of water class onto the 2nd principal component.
-    all_water_data = Y[y == 4, :]
-
-    print("First water observation")
-    print(all_water_data[0, :])
-
-    # Based on the coefficients and the attribute values for the observation
-    # displayed, would you expect the projection onto PC2 to be positive or
-    # negative - why? Consider *both* the magnitude and sign of *both* the
-    # coefficient and the attribute!
-
-    # You can determine the projection by (remove comments):
-    # print("...and its projection onto PC2") 
-    # print(all_water_data[0, :] @ V[:, 1])  
-
+    Z = Y @ V
+    
+    # Define the pairs of PCs to plot
+    scatter_pairs = [(0, 1), (0, 2), (1, 2), (0, 3)]
+    
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    axes = axes.flatten()
+    
+    for ax, (i, j) in zip(axes, scatter_pairs):
+        for c in range(C):
+            class_mask = (y == c)
+            ax.plot(Z[class_mask, i], Z[class_mask, j], "o", alpha=0.5, label=classNames[c])
+        ax.set_xlabel(f"PC{i+1}")
+        ax.set_ylabel(f"PC{j+1}")
+        ax.set_title(f"PC{i+1} vs PC{j+1}")
+        ax.grid(True)
+    
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=C, bbox_to_anchor=(0.5, 0.05))
+    
+    fig.suptitle("Concrete data: PCA", fontsize=16)
+    fig.tight_layout(rect=[0, 0.1, 1, 0.95])
+    plt.show()
 
 def print_summary_statistics(data):
     summary_stats = data.describe()
@@ -128,25 +139,38 @@ def assign_grade(value):
         return 'Low Strength Concrete'
     elif 20 <= value < 50:
         return 'Moderate Strength Concrete '
-    elif 50 <= value < 150:
-        return 'High Strength Concrete'
     else:
-        return 'Ultra High Strength Concrete'
+        return 'High Strength Concrete'
 
 def add_grade_column(df):
     df['Grade'] = df[df.columns[8]].apply(assign_grade)
     return df
-"""
+
+def correlation(X,y,attributeName):
+    X = pd.DataFrame(X)
+    fig, axes = plt.subplots(2, 4, figsize=(18, 10)) 
+    axes = axes.flatten() 
+
+    sns.set_style("whitegrid")
+
+    for i, column in enumerate(X.columns):
+        axes[i].scatter(X[column], y, alpha=0.6, color='royalblue', edgecolors='black')
+        xlabel = "Age (days)" if i == 7 else f"Compound {i+1} (kg/m^3)"
+        axes[i].set_xlabel(xlabel, fontsize=12, labelpad=10)
+        axes[i].set_ylabel("Concrete Compressive Strength (MPa)", fontsize=12, labelpad=10)
+        axes[i].grid(True, linestyle='--', alpha=0.6)  # Add subtle grid lines
+
+    fig.suptitle("Scatter Plots of Attributes vs Concrete Compressive Strength", fontsize=18, fontweight="bold")
+    plt.tight_layout(rect=[0, 0, 1, 0.95]) 
+    plt.show()
+
 def main():
-    X, y, N, M, C, classNames, attributeNames = import_data()
+    X, y, N, M, C, classNames, attributeNames, y2 = import_data()
     #scatter(X,C,y,classNames, attributeNames)
-    PCA_variance(X,N)
+    #PCA_variance(X,N)
     #PCA_attribute(X,attributeNames,N,y)
-    #print(data.head(10))
-    #print(data)
-    #print(values)
-    #print(headers)
+    #PCA_scatter(X,N,C,classNames,y)
+    correlation(X,y2,attributeNames)
 
 if __name__ == "__main__":
     main()
-"""
