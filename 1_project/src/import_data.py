@@ -30,7 +30,7 @@ def import_data():
     M = len(attributeNames)
     C = len(classNames) 
 
-    return X, y, N, M, C, classNames, attributeNames, y2
+    return df, X, y, N, M, C, classNames, attributeNames, y2
 
 def scatter(X, C, y, classNames, attributeNames):
     i = 1
@@ -164,7 +164,7 @@ def correlation(X,y,attributeName):
     plt.tight_layout(rect=[0, 0, 1, 0.95]) 
     plt.show()
 
-def main():
+"""def main():
     X, y, N, M, C, classNames, attributeNames, y2 = import_data()
     #scatter(X,C,y,classNames, attributeNames)
     #PCA_variance(X,N)
@@ -173,4 +173,4 @@ def main():
     correlation(X,y2,attributeNames)
 
 if __name__ == "__main__":
-    main()
+    main()"""
