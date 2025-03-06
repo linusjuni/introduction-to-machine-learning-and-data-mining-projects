@@ -136,7 +136,7 @@ def assign_grade(value):
 def add_grade_column(df):
     df['Grade'] = df[df.columns[8]].apply(assign_grade)
     return df
-
+"""
 def main():
     X, y, N, M, C, classNames, attributeNames = import_data()
     #scatter(X,C,y,classNames, attributeNames)
@@ -149,3 +149,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""
