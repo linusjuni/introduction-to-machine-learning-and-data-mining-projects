@@ -16,9 +16,8 @@ def import_data():
     attributeNames = df.columns.values
 
     classLabels = df["Grade"].to_list()
-    classNames = set(classLabels)
+    classNames = sorted(set(classLabels))
     classDict = dict(zip(classNames, range(4)))
-    
     y = np.asarray([classDict[value] for value in classLabels])
 
     X = np.empty((1030, 8))
@@ -35,11 +34,11 @@ def import_data():
 
 def assign_grade(value):
     if value < 20:
-        return 'Low Strength Concrete'
+        return 'Concrete Level A'
     elif 20 <= value < 50:
-        return 'Moderate Strength Concrete '
+        return 'Concrete Level B'
     else:
-        return 'High Strength Concrete'
+        return 'Concrete Level C'
 
 def add_grade_column(df):
     df['Grade'] = df[df.columns[8]].apply(assign_grade)
