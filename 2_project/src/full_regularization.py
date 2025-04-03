@@ -15,7 +15,7 @@ K = 10  # Number of folds
 CV = model_selection.KFold(K, shuffle=True, random_state=42)
 
 # Values of lambda - refined range focusing more on smaller values where we expect to see improvement
-lambdas = np.logspace(-2, 7, 50)
+lambdas = np.logspace(-2, 7, 100)
 
 # Initialize variables
 Error_train = np.empty((K, 1))
@@ -188,16 +188,44 @@ print(f"- Test error: {Error_test_rlr.mean():.4f}")
 print(f"- R² test: {(Error_test_nofeatures.mean() - Error_test_rlr.mean()) / Error_test_nofeatures.mean():.4f}")
 
 # %%
-# Plot feature weights for regularized model
-plt.figure(figsize=(12, 6))
+# Compare feature weights between regularized and unregularized models
+plt.figure(figsize=(15, 6))
+
+# Left subplot: Unregularized weights
+plt.subplot(1, 2, 1)
 feature_names = ['Offset', 'Cement', 'Blast Furnace Slag', 'Fly Ash', 'Water', 
                 'Superplasticizer', 'Coarse Aggregate', 'Fine Aggregate', 'Age']
-mean_weights = np.mean(w_rlr, axis=1)
-plt.barh(range(len(mean_weights)), mean_weights)
-plt.yticks(range(len(mean_weights)), feature_names)
+mean_weights_noreg = np.mean(w_noreg, axis=1)
+plt.barh(range(len(mean_weights_noreg)), mean_weights_noreg)
+plt.yticks(range(len(mean_weights_noreg)), feature_names)
 plt.xlabel('Coefficient Value')
-plt.title('Average Feature Weights in Ridge Regression')
+plt.title('Average Feature Weights Without Regularization')
 plt.grid(axis='x')
+
+# Right subplot: Regularized weights
+plt.subplot(1, 2, 2)
+mean_weights_rlr = np.mean(w_rlr, axis=1)
+plt.barh(range(len(mean_weights_rlr)), mean_weights_rlr)
+plt.yticks(range(len(mean_weights_rlr)), feature_names)
+plt.xlabel('Coefficient Value')
+plt.title('Average Feature Weights With Regularization')
+plt.grid(axis='x')
+
+plt.tight_layout()
+plt.show()
+
+# Optional: Direct comparison in a single plot
+plt.figure(figsize=(12, 6))
+x = np.arange(len(feature_names))
+width = 0.35
+plt.bar(x - width/2, mean_weights_noreg, width, label='Without Regularization')
+plt.bar(x + width/2, mean_weights_rlr, width, label='With Regularization')
+plt.xticks(x, feature_names, rotation=45, ha='right')
+plt.xlabel('Features')
+plt.ylabel('Coefficient Value')
+plt.title('Comparison of Feature Weights: Regularized vs Unregularized')
+plt.legend()
+plt.grid(axis='y')
 plt.tight_layout()
 plt.show()
 # %%
@@ -214,3 +242,4 @@ plt.tight_layout()
 plt.show()
 
 # %%
+
