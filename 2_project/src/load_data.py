@@ -46,3 +46,12 @@ def add_grade_column(df):
 
 df, X, y, N, M, C, classNames, attributeNames, y2 = import_data()
 # %%
+def normalize_data(X):
+    X_mean = np.mean(X, axis=0)
+    X_std = np.std(X, axis=0)
+    X_normalized = (X - X_mean) / X_std
+    return X_normalized
+
+X_normalized = normalize_data(X)
+
+# %%
