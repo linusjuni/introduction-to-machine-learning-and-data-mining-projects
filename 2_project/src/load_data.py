@@ -1,3 +1,4 @@
+# %%
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -7,6 +8,7 @@ from scipy.linalg import svd
 from pathlib import Path
 import seaborn as sns
 
+# %%
 def import_data():
     data_path = Path(__file__).resolve().parent.parent / "data" / "Concrete_Data.xls"
     df = pd.read_excel(data_path)
@@ -14,7 +16,7 @@ def import_data():
     attributeNames = df.columns.values
 
     classLabels = df["Grade"].to_list()
-    classNames = sorted(set(classLabels))
+    classNames = set(classLabels)
     classDict = dict(zip(classNames, range(4)))
     
     y = np.asarray([classDict[value] for value in classLabels])
@@ -44,5 +46,4 @@ def add_grade_column(df):
     return df
 
 df, X, y, N, M, C, classNames, attributeNames, y2 = import_data()
-
-print(df.head(5))
+# %%
