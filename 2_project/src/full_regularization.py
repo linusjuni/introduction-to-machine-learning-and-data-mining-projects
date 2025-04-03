@@ -213,5 +213,4 @@ plt.title('Distribution of Validation Errors Across Different Lambda Values')
 plt.tight_layout()
 plt.show()
 
-print("LOL")
 # %%
