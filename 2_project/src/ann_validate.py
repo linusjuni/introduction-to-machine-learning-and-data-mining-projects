@@ -16,6 +16,13 @@ def ann_validate(X, y, hs, cvf):
         y_train = torch.Tensor(y[train_index])
         X_test = torch.Tensor(X[test_index, :])
         y_test = torch.Tensor(y[test_index])
+        y_train = y_train.view(-1, 1)
+        y_test  = y_test.view(-1, 1)
+        
+        mu = torch.mean(X_train, dim=0)
+        sigma = torch.std(X_train, dim=0)
+        X_train = (X_train - mu) / sigma
+        X_test  = (X_test  - mu) / sigma
 
         for l in range(0, len(hs)):
             model = lambda: torch.nn.Sequential(

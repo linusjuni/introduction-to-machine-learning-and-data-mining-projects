@@ -12,9 +12,7 @@ from dtuimldmtools import draw_neural_net, train_neural_net
 from ann_validate import *
 from tqdm import tqdm  # For progress bars
 
-X = np.concatenate((np.ones((X_normalized.shape[0], 1)), X_normalized), 1)
-N, M = X.shape
-
+N, M = X_normalized.shape
 K = 5
 CV = model_selection.KFold(K, shuffle=True)
 
@@ -26,29 +24,30 @@ opt_hs = np.empty([K,1])
 
 lambdas = np.logspace(-2, 7, 100)
 hs = np.arange(1,6,1)
-w_rlr = np.empty((M, K))
+w_rlr = np.empty((M+1, K))
 
 k = 0
-for train_index, test_index in tqdm(CV.split(X, y2),total = K, desc="Outer CV folds"):
-    X_train = X[train_index]
+for train_index, test_index in tqdm(CV.split(X_normalized, y2),total = K, desc="Outer CV folds"):
+    X_train = X_normalized[train_index]
     y_train = y2[train_index]
-    X_test = X[test_index]
+    X_test = X_normalized[test_index]
     y_test = y2[test_index]
-    internal_cross_validation = 10
-
+    internal_cross_validation = 5
+    X_train_rlr = np.concatenate((np.ones((X_train.shape[0], 1)), X_train), 1)
+    X_test_rlr = np.concatenate((np.ones((X_test.shape[0], 1)), X_test), 1)
     (opt_val_err_rlr,
         opt_lambda,
         mean_w_vs_lambda,
         train_err_vs_lambda,
         test_err_vs_lambda,
-    ) = rlr_validate(X_train, y_train, lambdas, internal_cross_validation)
+    ) = rlr_validate(X_train_rlr, y_train, lambdas, internal_cross_validation)
 
     (opt_val_err_ann,
         opt_h,
-        test_err_vs_h) = ann_validate(X_train, y_train, hs, 2)
+        test_err_vs_h) = ann_validate(X_train, y_train, hs, internal_cross_validation)
 
-    Xty = X_train.T @ y_train
-    XtX = X_train.T @ X_train
+    Xty = X_train_rlr.T @ y_train
+    XtX = X_train_rlr.T @ X_train_rlr
 
     # Compute mean squared error without using the input data at all
     Error_test_baseline[k] = (
@@ -56,18 +55,21 @@ for train_index, test_index in tqdm(CV.split(X, y2),total = K, desc="Outer CV fo
     )
 
     # Estimating weights for the optimal value of lambda, on entire training set
-    lambdaI = opt_lambda * np.eye(M)
+    lambdaI = opt_lambda * np.eye(M+1)
     lambdaI[0, 0] = 0
     w_rlr[:, k] = np.linalg.solve(XtX + lambdaI, Xty).squeeze()
 
     Error_test_rlr[k] = (
-        np.square(y_test - X_test @ w_rlr[:, k]).sum(axis=0) / y_test.shape[0]
+        np.square(y_test - X_test_rlr @ w_rlr[:, k]).sum(axis=0) / y_test.shape[0]
     )
     opt_lamdas[k] = opt_lambda
+
     X_train_ann = torch.Tensor(X_train)
     y_train_ann = torch.Tensor(y_train)
     X_test_ann = torch.Tensor(X_test)
     y_test_ann = torch.Tensor(y_test)
+    y_train_ann = y_train_ann.view(-1, 1)
+    y_test_ann  = y_test_ann.view(-1, 1)
 
     model = lambda: torch.nn.Sequential(
             torch.nn.Linear(M, opt_h),  # M features to n_hidden_units
