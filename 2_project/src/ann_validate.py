@@ -2,15 +2,16 @@ import torch
 import numpy as np
 from dtuimldmtools import draw_neural_net, train_neural_net
 from sklearn import model_selection
+from tqdm import tqdm  # For progress bars
 
-def ann_validate(X, y, hs, cvf=10):
+def ann_validate(X, y, hs, cvf):
     CV = model_selection.KFold(cvf, shuffle=True)
     M = X.shape[1]
     test_error = np.empty((cvf, len(hs)))
     f = 0
     y = y.squeeze()
 
-    for train_index, test_index in CV.split(X, y):
+    for train_index, test_index in tqdm(CV.split(X, y),total = cvf,desc="ANN optimization"):
         X_train = torch.Tensor(X[train_index, :])
         y_train = torch.Tensor(y[train_index])
         X_test = torch.Tensor(X[test_index, :])
@@ -36,7 +37,7 @@ def ann_validate(X, y, hs, cvf=10):
             y_test_est = net(X_test)
 
             se = (y_test_est.float() - y_test.float()) ** 2  # squared error
-            mse = (sum(se).type(torch.float) / len(y_test)).data.numpy()  # mean
+            mse = torch.mean(se).item()  # mean
             test_error[f,l] = mse
 
         f = f + 1

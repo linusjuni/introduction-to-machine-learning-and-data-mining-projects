@@ -10,11 +10,12 @@ from sklearn import model_selection
 from load_data import X_normalized, y2
 from dtuimldmtools import draw_neural_net, train_neural_net
 from ann_validate import *
+from tqdm import tqdm  # For progress bars
 
 X = np.concatenate((np.ones((X_normalized.shape[0], 1)), X_normalized), 1)
 N, M = X.shape
 
-K = 10
+K = 5
 CV = model_selection.KFold(K, shuffle=True)
 
 Error_test_ANN = np.empty((K, 1))
@@ -24,11 +25,11 @@ opt_lamdas = np.empty([K,1])
 opt_hs = np.empty([K,1])
 
 lambdas = np.logspace(-2, 7, 100)
-hs = np.arange(1,11,1)
+hs = np.arange(1,6,1)
 w_rlr = np.empty((M, K))
 
 k = 0
-for train_index, test_index in CV.split(X, y2):
+for train_index, test_index in tqdm(CV.split(X, y2),total = K, desc="Outer CV folds"):
     X_train = X[train_index]
     y_train = y2[train_index]
     X_test = X[test_index]
@@ -44,7 +45,7 @@ for train_index, test_index in CV.split(X, y2):
 
     (opt_val_err_ann,
         opt_h,
-        test_err_vs_h) = ann_validate(X_train, y_train, hs, internal_cross_validation)
+        test_err_vs_h) = ann_validate(X_train, y_train, hs, 2)
 
     Xty = X_train.T @ y_train
     XtX = X_train.T @ X_train
@@ -79,16 +80,16 @@ for train_index, test_index in CV.split(X, y2):
     net, final_loss, learning_curve = train_neural_net(
         model,
         loss_fn,
-        X=X_train,
-        y=y_train,
+        X=X_train_ann,
+        y=y_train_ann,
         n_replicates=1,
         max_iter=10000,
     )
     
-    y_test_est = net(X_test)
+    y_test_est = net(X_test_ann)
 
-    se = (y_test_est.float() - y_test.float()) ** 2  # squared error
-    mse = (sum(se).type(torch.float) / len(y_test)).data.numpy()  # mean
+    se = (y_test_est.float() - y_test_ann.float()) ** 2  # squared error
+    mse = torch.mean(se).item()  # mean
     Error_test_ANN[k] = mse
     opt_hs[k] = opt_h
 
