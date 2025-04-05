@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import model_selection
-from load_data import X_normalized, y2  # X_normalized is already standardized
+from load_data import X_normalized, y2 # X_normalized is already standardized
 from dtuimldmtools import rlr_validate
 
 # %%
