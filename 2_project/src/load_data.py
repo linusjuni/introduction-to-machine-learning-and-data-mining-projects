@@ -33,7 +33,7 @@ def import_data():
     return df, X, y, N, M, C, classNames, attributeNames, y2
 
 def assign_grade(value):
-    if value < 30:
+    if value < 35:
         return 'Concrete Level A'
     else:
         return 'Concrete Level B'

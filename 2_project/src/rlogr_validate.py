@@ -1,6 +1,4 @@
-import torch
 import numpy as np
-from dtuimldmtools import draw_neural_net, train_neural_net
 from sklearn import model_selection
 from tqdm import tqdm
 import sklearn.linear_model as lm
@@ -8,7 +6,6 @@ from sklearn.metrics import accuracy_score
 
 def rlogr_validate(X, y, lambdas, cvf):
     CV = model_selection.KFold(cvf, shuffle=True)
-    M = X.shape[1]
     test_error = np.empty((cvf, len(lambdas)))
     f = 0
     y = y.squeeze()
