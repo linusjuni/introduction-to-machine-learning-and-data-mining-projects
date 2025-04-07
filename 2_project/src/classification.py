@@ -1,14 +1,10 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import torch
 from scipy.linalg import svd
 from pathlib import Path
 import seaborn as sns
-from dtuimldmtools import rlr_validate
 from sklearn import model_selection
 from load_data import X_normalized, y
-from dtuimldmtools import draw_neural_net, train_neural_net
 from ann_validate import *
 from tqdm import tqdm
 from rlogr_validate import * 

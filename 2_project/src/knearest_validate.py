@@ -1,10 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.io import loadmat
-from sklearn import model_selection
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import model_selection
-from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 
 def knearest_validate(X, y, nbrs, cvf):
