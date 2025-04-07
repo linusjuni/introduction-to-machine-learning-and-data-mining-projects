@@ -10,7 +10,7 @@ from sklearn import model_selection
 from load_data import X_normalized, y2
 from dtuimldmtools import draw_neural_net, train_neural_net
 from ann_validate import *
-from tqdm import tqdm  # For progress bars
+from tqdm import tqdm
 
 N, M = X_normalized.shape
 K = 5
@@ -105,4 +105,5 @@ df_results = pd.DataFrame({
     'RLR_test_error': Error_test_rlr.ravel(),
     'baseline_test_error': Error_test_baseline.ravel()
 })
+
 print(df_results)
