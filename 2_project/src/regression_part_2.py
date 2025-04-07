@@ -23,7 +23,7 @@ opt_lamdas = np.empty([K,1])
 opt_hs = np.empty([K,1])
 
 lambdas = np.logspace(-2, 7, 100)
-hs = np.arange(1,6,1)
+hs = np.array([1,2,5,10,20])
 w_rlr = np.empty((M+1, K))
 
 k = 0
