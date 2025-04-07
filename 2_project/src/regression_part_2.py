@@ -13,7 +13,7 @@ from ann_validate import *
 from tqdm import tqdm
 
 N, M = X_normalized.shape
-K = 5
+K = 10
 CV = model_selection.KFold(K, shuffle=True)
 
 Error_test_ANN = np.empty((K, 1))
@@ -32,9 +32,11 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y2),total = K, desc="
     y_train = y2[train_index]
     X_test = X_normalized[test_index]
     y_test = y2[test_index]
-    internal_cross_validation = 5
+    internal_cross_validation = 10
+
     X_train_rlr = np.concatenate((np.ones((X_train.shape[0], 1)), X_train), 1)
     X_test_rlr = np.concatenate((np.ones((X_test.shape[0], 1)), X_test), 1)
+    
     (opt_val_err_rlr,
         opt_lambda,
         mean_w_vs_lambda,
