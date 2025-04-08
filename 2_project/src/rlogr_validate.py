@@ -24,7 +24,7 @@ def rlogr_validate(X, y, lambdas, cvf):
         for l in range(0, len(lambdas)):
             C_value = 1.0 / lambdas[l]
 
-            model = lm.LogisticRegression(penalty='l2', C=C_value, solver='lbfgs', max_iter=1000)
+            model = lm.LogisticRegression(penalty='l2', C=C_value, solver='lbfgs', max_iter=1000,fit_intercept=False)
             model.fit(X_train, y_train)
             
             y_est = model.predict(X_test)

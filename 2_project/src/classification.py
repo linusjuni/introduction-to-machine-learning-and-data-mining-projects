@@ -74,7 +74,7 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y),total = K, desc="O
 
     error = 1 - accuracy_score(y_test, y_est_knn)
     Error_test_knn[k] = error
-
+    print(test_err_vs_nbrs)
     k = k + 1
 
 df_results = pd.DataFrame({
