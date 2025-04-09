@@ -6,18 +6,14 @@ from load_data import X_normalized, y2 # X_normalized is already standardized
 from dtuimldmtools import rlr_validate
 
 # %%
-# Add offset attribute (column of ones)
 X = np.concatenate((np.ones((X_normalized.shape[0], 1)), X_normalized), 1)
 N, M = X.shape
 
-# Create cross-validation partition for evaluation
 K = 10  # Number of folds
 CV = model_selection.KFold(K, shuffle=True, random_state=42)
 
-# Values of lambda - refined range focusing more on smaller values where we expect to see improvement
 lambdas = np.logspace(-2, 7, 100)
 
-# Initialize variables
 Error_train = np.empty((K, 1))
 Error_test = np.empty((K, 1))
 Error_train_rlr = np.empty((K, 1))
@@ -27,10 +23,8 @@ Error_test_nofeatures = np.empty((K, 1))
 w_rlr = np.empty((M, K))
 w_noreg = np.empty((M, K))
 
-# Store lambda values and corresponding validation errors
 lambda_error = []
 
-# Additional arrays to track lambda performance across all folds
 all_train_err_vs_lambda = np.zeros((len(lambdas), K))
 all_test_err_vs_lambda = np.zeros((len(lambdas), K))
 all_mean_w_vs_lambda = []
@@ -38,7 +32,6 @@ all_mean_w_vs_lambda = []
 # %%
 k = 0
 for train_index, test_index in CV.split(X, y2):
-    # Extract training and test set for current CV fold
     X_train = X[train_index]
     y_train = y2[train_index]
     X_test = X[test_index]
@@ -46,7 +39,6 @@ for train_index, test_index in CV.split(X, y2):
     
     internal_cross_validation = 10
     
-    # Find optimal lambda using internal cross-validation
     (
         opt_val_err,
         opt_lambda,
@@ -55,15 +47,12 @@ for train_index, test_index in CV.split(X, y2):
         test_err_vs_lambda,
     ) = rlr_validate(X_train, y_train, lambdas, internal_cross_validation)
     
-    # Store all errors for each lambda value to compute average across folds
     all_train_err_vs_lambda[:, k] = train_err_vs_lambda
     all_test_err_vs_lambda[:, k] = test_err_vs_lambda
     all_mean_w_vs_lambda.append(mean_w_vs_lambda)
     
-    # Store lambda and error values for plotting
     lambda_error.append((opt_lambda, opt_val_err))
     
-    # Matrix calculations
     Xty = X_train.T @ y_train
     XtX = X_train.T @ X_train
     
@@ -83,10 +72,8 @@ for train_index, test_index in CV.split(X, y2):
     Error_train[k] = np.square(y_train - X_train @ w_noreg[:, k]).sum() / y_train.shape[0]
     Error_test[k] = np.square(y_test - X_test @ w_noreg[:, k]).sum() / y_test.shape[0]
     
-    # Print debug info for this fold
     print(f"Fold {k+1}: Optimal λ = {opt_lambda:.2e}, Validation error = {opt_val_err:.4f}")
     
-    # Specific fold-level diagnostics
     print(f"  Lambda range analysis (Fold {k+1}):")
     print(f"  - Min test error: {np.min(test_err_vs_lambda):.4f} at λ = {lambdas[np.argmin(test_err_vs_lambda)]:.2e}")
     print(f"  - Max test error: {np.max(test_err_vs_lambda):.4f} at λ = {lambdas[np.argmax(test_err_vs_lambda)]:.2e}")
@@ -95,22 +82,17 @@ for train_index, test_index in CV.split(X, y2):
     k += 1
 
 # %%
-# Calculate average errors across all folds for each lambda
 avg_train_err = np.mean(all_train_err_vs_lambda, axis=1)
 avg_test_err = np.mean(all_test_err_vs_lambda, axis=1)
 
-# Identify the best lambda based on average test error across all folds
 best_lambda_idx = np.argmin(avg_test_err)
 best_lambda = lambdas[best_lambda_idx]
 
-# Collect all validation errors across folds
 all_lambdas = [x[0] for x in lambda_error]
 all_errors = [x[1] for x in lambda_error]
 
-# Calculate mean optimal lambda
 mean_opt_lambda = np.mean(all_lambdas)
 
-# Calculate the standard deviation of errors across folds (for error bars)
 std_test_err = np.std(all_test_err_vs_lambda, axis=1)
 
 # %%
