@@ -9,6 +9,13 @@ from ann_validate import *
 from tqdm import tqdm
 from rlogr_validate import * 
 from knearest_validate import * 
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+
+y_true_knn = []
+y_pred_knn = []
+y_true_logr = []
+y_pred_logr = []
 
 K = 10
 CV = model_selection.KFold(K, shuffle=True)
@@ -64,6 +71,9 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y),total = K, desc="O
             
     y_est_rlogr = model.predict(X_test_rlogr)
 
+    y_true_logr.extend(y_test)
+    y_pred_logr.extend(y_est_rlogr)
+
     rlogr_error = 1 - accuracy_score(y_test, y_est_rlogr)
     Error_test_logr[k] = rlogr_error
 
@@ -71,6 +81,9 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y),total = K, desc="O
     knclassifier = KNeighborsClassifier(opt_nbrs)
     knclassifier.fit(X_train, y_train)
     y_est_knn = knclassifier.predict(X_test)
+
+    y_true_knn.extend(y_test)
+    y_pred_knn.extend(y_est_knn)
 
     error = 1 - accuracy_score(y_test, y_est_knn)
     Error_test_knn[k] = error
@@ -87,3 +100,50 @@ df_results = pd.DataFrame({
 })
 
 print(df_results)
+
+def plot_confusion_matrix(y_true, y_pred, title='Confusion Matrix', save_path=None):
+    # Labels specific to your dataset
+    labels = ['Class A', 'Class B']
+    
+    # Confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    cm_percent = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100
+    
+    # Create annotated labels: count + percentage
+    annot = np.empty_like(cm, dtype=object)
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            annot[i, j] = f'{cm[i, j]}\n({cm_percent[i, j]:.1f}%)'
+    
+    # Plot
+    plt.figure(figsize=(6, 5))
+    ax = sns.heatmap(cm, annot=annot, fmt='', cmap='Blues', cbar=False,
+                     xticklabels=labels, yticklabels=labels, linewidths=0.5, linecolor='gray')
+
+    plt.xlabel('Predicted Label', fontsize=12)
+    plt.ylabel('True Label', fontsize=12)
+    plt.title(title, fontsize=14)
+    plt.tight_layout()
+
+    # Save to file if specified
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    
+    return ax
+
+# Plot KNN confusion matrix with improved visualization
+plot_confusion_matrix(
+    y_true_knn, 
+    y_pred_knn, 
+    f'KNN Confusion Matrix',
+    save_path='knn_confusion_matrix_enhanced.png'
+)
+
+plot_confusion_matrix(
+    y_true_logr, 
+    y_pred_logr, 
+    f'Logistic Regression Confusion Matrix',
+    save_path='logr_confusion_matrix.png'
+)
+
+plt.show()
