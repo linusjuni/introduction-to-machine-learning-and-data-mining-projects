@@ -11,9 +11,10 @@ from load_data import X_normalized, y2
 from dtuimldmtools import draw_neural_net, train_neural_net
 from ann_validate import *
 from tqdm import tqdm
+from dtuimldmtools.statistics import correlated_ttest
 
 N, M = X_normalized.shape
-K = 10
+K = 2
 CV = model_selection.KFold(K, shuffle=True)
 
 Error_test_ANN = np.empty((K, 1))
@@ -51,12 +52,10 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y2),total = K, desc="
     Xty = X_train_rlr.T @ y_train
     XtX = X_train_rlr.T @ X_train_rlr
 
-    # Compute mean squared error without using the input data at all
     Error_test_baseline[k] = (
         np.square(y_test - y_test.mean()).sum(axis=0) / y_test.shape[0]
     )
 
-    # Estimating weights for the optimal value of lambda, on entire training set
     lambdaI = opt_lambda * np.eye(M+1)
     lambdaI[0, 0] = 0
     w_rlr[:, k] = np.linalg.solve(XtX + lambdaI, Xty).squeeze()
@@ -74,10 +73,9 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y2),total = K, desc="
     y_test_ann  = y_test_ann.view(-1, 1)
 
     model = lambda: torch.nn.Sequential(
-            torch.nn.Linear(M, opt_h),  # M features to n_hidden_units
-            torch.nn.Tanh(),  # 1st transfer function,
-            torch.nn.Linear(opt_h, 1),  # n_hidden_units to 1 output neuron
-            # no final tranfer function, i.e. "linear output")
+            torch.nn.Linear(M, opt_h),
+            torch.nn.Tanh(),
+            torch.nn.Linear(opt_h, 1),
             )
     loss_fn = torch.nn.MSELoss()
 
@@ -93,7 +91,7 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y2),total = K, desc="
     y_test_est = net(X_test_ann)
 
     se = (y_test_est.float() - y_test_ann.float()) ** 2  # squared error
-    mse = torch.mean(se).item()  # mean
+    mse = torch.mean(se).item() 
     Error_test_ANN[k] = mse
     opt_hs[k] = opt_h
 
@@ -109,3 +107,30 @@ df_results = pd.DataFrame({
 })
 
 print(df_results)
+
+"""
+alpha = 0.05
+rho = 1/K
+
+zA = np.asarray(df_results['x']) # write name of model from df
+zB = np.asarray(df_results['x']) # write name of model from df
+zC = np.asarray(df_results['x']) # write name of model from df
+
+zAB = zA - zB
+zAC = zA - zC
+zBC = zB - zC
+
+p_SII_AB, CI_SII_AB = correlated_ttest(zAB, rho, alpha=alpha)
+p_SII_AC, CI_SII_AC = correlated_ttest(zAC, rho, alpha=alpha)
+p_SII_BC, CI_SII_BC = correlated_ttest(zBC, rho, alpha=alpha)
+
+p_ = [p_SII_AB, p_SII_AC, p_SII_BC]
+p = ['{:0.2e}'.format(i) for i in p_]
+CI = [CI_SII_AB, CI_SII_AC, CI_SII_BC]
+
+stat_dic = {'p-value':p, 'Confidence Interval':CI}
+stats_ind = ['Baseline - RLogR', 'Baseline - KNN', 'RLogR - KNN']
+
+stats_df = pd.DataFrame(stat_dic, index=stats_ind)
+print(stats_df.to_latex())
+"""

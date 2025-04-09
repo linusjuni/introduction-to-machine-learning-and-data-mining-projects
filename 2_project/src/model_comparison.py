@@ -8,7 +8,6 @@ from dtuimldmtools import rlr_validate, train_neural_net, visualize_decision_bou
 from scipy import stats
 
 # %%
-# Configuration
 K1 = 5  # Outer folds
 K2 = 5  # Inner folds
 random_state = 42

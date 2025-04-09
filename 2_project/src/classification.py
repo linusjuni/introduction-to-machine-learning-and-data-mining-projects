@@ -41,13 +41,11 @@ for train_index, test_index in tqdm(CV.split(X_normalized, y),total = K, desc="O
     X_train_rlogr = np.concatenate((np.ones((X_train.shape[0], 1)), X_train), 1)
     X_test_rlogr = np.concatenate((np.ones((X_test.shape[0], 1)), X_test), 1)
     
-    #Inner k-fold for finding optimal lambda
     (opt_val_err_rlogr,
         opt_lambda,
         test_err_vs_lambda) = rlogr_validate(X_train_rlogr, y_train, lambdas, internal_cross_validation)
     opt_lambdas[k] = opt_lambda
     
-    #Inner k-fold for finding optimal nbrs
     (opt_val_err_knn,
         opt_nbrs,
         test_err_vs_nbrs) = knearest_validate(X_train, y_train, nbrs_range, internal_cross_validation)
