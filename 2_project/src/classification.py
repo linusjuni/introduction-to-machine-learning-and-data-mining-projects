@@ -102,14 +102,12 @@ df_results = pd.DataFrame({
 print(df_results)
 
 def plot_confusion_matrix(y_true, y_pred, title='Confusion Matrix', save_path=None):
-    # Labels specific to your dataset
     labels = ['Class A', 'Class B']
     
     # Confusion matrix
     cm = confusion_matrix(y_true, y_pred)
     cm_percent = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100
     
-    # Create annotated labels: count + percentage
     annot = np.empty_like(cm, dtype=object)
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
@@ -125,13 +123,11 @@ def plot_confusion_matrix(y_true, y_pred, title='Confusion Matrix', save_path=No
     plt.title(title, fontsize=14)
     plt.tight_layout()
 
-    # Save to file if specified
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
     
     return ax
 
-# Plot KNN confusion matrix with improved visualization
 plot_confusion_matrix(
     y_true_knn, 
     y_pred_knn, 
