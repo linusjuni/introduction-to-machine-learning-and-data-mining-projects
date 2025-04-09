@@ -14,7 +14,7 @@ from tqdm import tqdm
 from dtuimldmtools.statistics import correlated_ttest
 
 N, M = X_normalized.shape
-K = 2
+K = 10
 CV = model_selection.KFold(K, shuffle=True)
 
 Error_test_ANN = np.empty((K, 1))
@@ -112,9 +112,9 @@ print(df_results)
 alpha = 0.05
 rho = 1/K
 
-zA = np.asarray(df_results['x']) # write name of model from df
-zB = np.asarray(df_results['x']) # write name of model from df
-zC = np.asarray(df_results['x']) # write name of model from df
+zA = np.asarray(df_results['x']) # write name of model error from df
+zB = np.asarray(df_results['x']) # write name of model error from df
+zC = np.asarray(df_results['x']) # write name of model error from df
 
 zAB = zA - zB
 zAC = zA - zC
