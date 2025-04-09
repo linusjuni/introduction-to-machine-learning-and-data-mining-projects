@@ -11,6 +11,7 @@ from rlogr_validate import *
 from knearest_validate import * 
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
+from dtuimldmtools.statistics.statistics import correlated_ttest
 
 y_true_knn = []
 y_pred_knn = []
@@ -100,6 +101,36 @@ df_results = pd.DataFrame({
 })
 
 print(df_results)
+
+# comparing models:
+# Model A: Baseline
+# Model B: RLOGR
+# Model C: KNN
+
+alpha = 0.05
+rho = 1/K
+
+zA = np.asarray(df_results['baseline_test_error'])
+zB = np.asarray(df_results['RLOGR_test_error'])
+zC = np.asarray(df_results['KNN_test_error'])
+
+zAB = zA - zB
+zAC = zA - zC
+zBC = zB - zC
+
+p_SII_AB, CI_SII_AB = correlated_ttest(zAB, rho, alpha=alpha)
+p_SII_AC, CI_SII_AC = correlated_ttest(zAC, rho, alpha=alpha)
+p_SII_BC, CI_SII_BC = correlated_ttest(zBC, rho, alpha=alpha)
+
+p_ = [p_SII_AB, p_SII_AC, p_SII_BC]
+p = ['{:0.2e}'.format(i) for i in p_]
+CI = [CI_SII_AB, CI_SII_AC, CI_SII_BC]
+
+stat_dic = {'p-value':p, 'Confidence Interval':CI}
+stats_ind = ['Baseline - RLogR', 'Baseline - KNN', 'RLogR - KNN']
+
+stats_df = pd.DataFrame(stat_dic, index=stats_ind)
+print(stats_df.to_latex())
 
 def plot_confusion_matrix(y_true, y_pred, title='Confusion Matrix', save_path=None):
     labels = ['Class A', 'Class B']
