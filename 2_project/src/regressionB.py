@@ -111,9 +111,9 @@ print(df_results)
 alpha = 0.05
 rho = 1/K
 
-zA = np.asarray(df_results['ANN_test_error']) # write name of model error from df
-zB = np.asarray(df_results['RLR_test_error']) # write name of model error from df
-zC = np.asarray(df_results['baseline_test_error']) # write name of model error from df
+zA = np.asarray(df_results['ANN_test_error'])
+zB = np.asarray(df_results['RLR_test_error'])
+zC = np.asarray(df_results['baseline_test_error'])
 
 zAB = zA - zB
 zAC = zA - zC
