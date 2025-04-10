@@ -108,13 +108,12 @@ df_results = pd.DataFrame({
 
 print(df_results)
 
-"""
 alpha = 0.05
 rho = 1/K
 
-zA = np.asarray(df_results['x']) # write name of model error from df
-zB = np.asarray(df_results['x']) # write name of model error from df
-zC = np.asarray(df_results['x']) # write name of model error from df
+zA = np.asarray(df_results['ANN_test_error']) # write name of model error from df
+zB = np.asarray(df_results['RLR_test_error']) # write name of model error from df
+zC = np.asarray(df_results['baseline_test_error']) # write name of model error from df
 
 zAB = zA - zB
 zAC = zA - zC
@@ -133,4 +132,3 @@ stats_ind = ['Baseline - RLogR', 'Baseline - KNN', 'RLogR - KNN']
 
 stats_df = pd.DataFrame(stat_dic, index=stats_ind)
 print(stats_df.to_latex())
-"""
